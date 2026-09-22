@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.env
+
+# отчёт прогона метрик — результат, а не исходник
+evals/report.json
+
+# настройки IDE
+.idea/
+.vscode/
+
+# запись работы сервиса: живёт на asciinema.org, ссылка в README
+*.cast

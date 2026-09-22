@@ -1,45 +1,49 @@
 # ИИ-генератор карточки товара
 
-
 [![hexlet-check](https://github.com/Obolduy/test-program-please-ignore-llm-lvl2-project-432/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/Obolduy/test-program-please-ignore-llm-lvl2-project-432/actions)
 
-Соберите бэкенд-сервис, который принимает документы поставщиков в форматах pdf, docx и
-xlsx, строит по ним поисковый индекс и генерирует черновик карточки товара — с
-указанием источников, списком недостающих данных и уровнем уверенности. По пути
-освоите LLM-клиент с ретраями, строгий контракт результата на Pydantic, разбор
-офисных документов и чанкинг, локальные эмбеддинги с pgvector и гибридный поиск,
-цитирование с проверкой источников, учёт стоимости вызовов, метрики генерации и
-защиту от инъекций через документы и утечек персональных данных.
+Сервис принимает доки в pdf, docx, xlsx, строит по ним поисковый индекс
+и собирает черновик карточки товара: характеристики со ссылками на фрагменты документов,
+список недостающих полей и уровень уверенности.
 
-Учебный проект Хекслета: https://ru.hexlet.io/programs/test-program-please-ignore-llm-lvl2
+[![asciicast](https://asciinema.org/a/leZh1YsjweFgRazO.svg)](https://asciinema.org/a/leZh1YsjweFgRazO)
 
+## Требования
 
-## Стек
+[uv](https://docs.astral.sh/uv/), Docker Compose и сервер моделей с API в формате
+OpenAI Ollama, LM Studio или OpenRouter.
 
-- Python
-
-## Установка
-
-<!-- Опишите установку: клонирование, зависимости, переменные окружения -->
+## Запуск
 
 ```bash
-git clone https://github.com/Obolduy/test-program-please-ignore-llm-lvl2-project-432.git
-cd test-program-please-ignore-llm-lvl2-project-432
+cp .env.example .env   
+make infra           
+make setup            
+make api
+make worker
+curl localhost:8000/ready
 ```
 
 ## Использование
 
-<!-- Добавьте примеры запуска и запись asciinema — именно это смотрит работодатель -->
+```bash
+curl -F file=@data/blender_passport.pdf localhost:8000/documents
+curl localhost:8000/documents
+curl -X POST localhost:8000/generate-card -H 'Content-Type: application/json' \
+  -d '{"document_ids": ["id документа"], "product_hint": "блендер"}'
+curl localhost:8000/jobs/<id задачи>
+curl -X POST localhost:8000/workflows/<id задачи>/approve
+curl -X POST localhost:8000/workflows/<id задачи>/request-changes
+```
 
----
+## Разработка
 
-<details>
-<summary>Автоматические тесты Хекслета</summary>
+```bash
+make test   
+make lint
+make eval    
+make help   
+```
 
-Тесты запускаются на каждый коммит. За запуск отвечает файл `.github/workflows/hexlet-check.yml` — не удаляйте и не переименовывайте ни его, ни репозиторий.
-
-</details>
-
-## О Хекслете
-
-[Хекслет](https://ru.hexlet.io/) — школа программирования: авторские программы обучения с практикой, поддержкой наставников и реальными проектами, которые остаются в резюме. Этот репозиторий — один из таких проектов.
+Результат ласт прогона в [docs/report.md](docs/report.md),
+принятые решения в [docs/decisions.md](docs/decisions.md).
