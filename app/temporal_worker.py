@@ -1,0 +1,45 @@
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+
+from temporalio.client import Client
+from temporalio.worker import Worker
+
+from app.core.config import settings
+from app.core.logging import get_logger, setup_logging
+from app.temporal.activities import (
+    critique_activity,
+    extract_activity,
+    generate_activity,
+    parse_document_activity,
+    rag_card_activity,
+    set_job_status_activity,
+)
+from app.temporal.workflows import CardWorkflow, ParseDocumentWorkflow, RagCardWorkflow
+
+log = get_logger(__name__)
+
+
+async def main() -> None:
+    setup_logging()
+    client = await Client.connect(settings.temporal_host)
+    with ThreadPoolExecutor(max_workers=settings.temporal_activity_threads) as threads:
+        worker = Worker(
+            client,
+            task_queue=settings.temporal_task_queue,
+            workflows=[CardWorkflow, ParseDocumentWorkflow, RagCardWorkflow],
+            activities=[
+                extract_activity,
+                generate_activity,
+                critique_activity,
+                set_job_status_activity,
+                parse_document_activity,
+                rag_card_activity,
+            ],
+            activity_executor=threads,
+        )
+        log.info("worker_started", task_queue=settings.temporal_task_queue)
+        await worker.run()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
